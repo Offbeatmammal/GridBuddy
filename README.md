@@ -5,9 +5,11 @@ Designed to offer a light-weight simple alterative to paper based grid sheets fo
 
 Allows organizers to define multiple races within an event, create a list of grid officials, populate original race grids following qualifying with immediate distribution.
 
+Once a grid has been created, the Grid Chief can assign team members to specific rows (and green flag)
+
 Marshalling teams can mark cars present or scratched, without having to communicate via radio to Grid officials
 
-Grid officials can also mark vehicles as starting from lane (so not expected to appear on Grid)
+Grid officials can mark vehicles as starting from lane (so not expected to appear on Grid)
 
 Supports both Right and Left Pole position layouts (event by event).
 
@@ -29,3 +31,10 @@ if (!$conn) {
 ```
 
 `gridbuddy.sql` contains MySQL database layout with sample event data
+
+To Do
+---
+Many things still need doing, including a lot fo UX tidy-up, workflow improvement, and performance tweaks.
+
+- Import automatically from race admin software (eg [NatSoft](http://racing.natsoft.com.au/))
+- Support Marshalling/Grid teams moving a car to a rear-of-grid space
