@@ -1,0 +1,507 @@
+<html data-long-press-delay="1000">
+<head>
+<title>Grid Buddy</title>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+<script src="https://kit.fontawesome.com/68f3085cec.js" crossorigin="anonymous"></script>
+<script src="long_press_event.js"></script>
+<script src="common.js"></script>
+<style>
+html body {
+    margin: 5px;
+}
+.box {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.header {
+  flex: 0 1 auto;
+  margin-bottom: 5px;
+}
+
+.content {
+  flex: 1;
+  overflow: auto;
+}
+
+.footer {
+  flex: 0 1 30px;
+  margin-top: 5px;
+  margin-bottom: 0px;
+  vertical-align: bottom;
+  text-align: center;
+}
+    .grid_header {
+        margin-left: auto;
+        margin-right: auto;
+        font-weight: bold;
+        font-size: 6vw;
+        border: solid 1px black;
+    }
+    .grid_header td {
+        padding-left: 1.5vw;
+        padding-right: 1.5vw;
+    }
+    .grid_header tr td:nth-child(2) {
+        border-left: solid 1px black;
+        border-right: solid 1px black;
+    }
+    .grid_detail {
+        margin-left: auto;
+        margin-right: auto;
+        border-collapse: collapse;
+    }
+    .grid_detail tr:nth-child(even) {
+        background-color: #a0a0a0;
+    }
+    .grid_detail tr:nth-child(odd) {
+        background-color: #d0d0d0;
+    }
+    .grid_detail tr:nth-child(n+1) {
+        border-top: 4px solid white;
+    }
+    .grid_detail tr td:nth-child(1) {
+        padding-left: 2vw;
+        padding-right: 2vw;
+    }
+    .grid_detail tr td:nth-child(5) {
+        padding-right: 2vw;
+        padding-left: 2vw;
+        text-align: right;
+    }
+    .grid_detail .me {
+        font-weight: bold !important;
+        border-left: 1vw solid black;
+        border-right: 1vw solid black;
+    }
+    .grid_detail tr td:nth-child(3) {
+        padding-right: 1.2vw;
+        padding-left: 1.2vw;
+        font-weight: normal;
+        font-size: 5vw;
+        text-align: center;
+        opacity: 0.5;
+        min-width: 5vw;
+    }
+
+    .me_initial {
+        opacity: 1 !important;
+    }
+    .grid_detail tr td:nth-child(1),
+    .grid_detail tr td:nth-child(5) {
+        font-weight: normal;
+        font-size: 5vw;
+        vertical-align: bottom;
+    }
+    
+    .grid_detail tr td:nth-child(2),
+    .grid_detail tr td:nth-child(4) {
+        text-align: right;
+        padding-left: 1.1vw;
+        padding-right: 1.1vw;
+        font-size: 8.5vw;
+    }
+.scratch {
+    text-decoration: line-through;
+    color:white;
+}
+.fromlane {
+    color:white;
+}
+.who_gc {
+    display: none;
+}
+.who_gc select {
+    font-size: 5vw;
+}
+.who_g {
+    display: none;
+}
+
+.dialog {
+  border:10px solid #666;
+  padding:30px;
+  background:#b0b0b0;
+    position:fixed;
+  display:none;
+  left: 50%;
+    top: 30%;
+    transform: translate(-50%, -50%);
+    font-size: 4vw;
+}
+.dialog select,
+.dialog tr td
+{
+    font-size: 6vw;
+}
+.dialog button
+{
+    font-size: 7vw;
+    border: 2px solid black;
+    padding: 1vw;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+</style>
+<script>
+event_id = getCookie("event");
+if (event_id == "") {
+    window.location="login.php";
+}
+if (getCookie("race_id") == "") {
+    window.location="select_race.php";
+}
+
+// Create a reference for the Wake Lock.
+let wakeLock = null;
+// create an async function to request a wake lock
+try {
+  wakeLock = navigator.wakeLock.request('screen');
+  $("#fm").text('  -  Wake Lock is active!');
+} catch (err) {
+  // try other solutions here ...
+}
+</script>
+</head>
+<body>
+    <div class="box">
+    <div class="header">
+    <table class="grid_header">
+        <tr><td id="e_id" onclick="window.location='select_race.php'"></td><td id="e_name"></td><td id="e_time"></td>
+        <td><i class="fa fa-cog" aria-hidden="true" onclick="popup(0)"></i></td></tr>
+    </table>
+    </div>
+    <div id="content" class="content">
+    <table id="grid_detail" class="grid_detail">
+        <tbody>
+        </tbody>
+    </table>
+    <div id="grid_detail_end"></div>
+
+    <div class="dialog" id="myform">
+            <script>
+                m = getCookie("m")
+                document.write('<table><tr><td>Role:</td><td><select name="m" id="m" onchange="saveme(0)">')
+                document.write('<option value="M"'+(m=="M"?" selected":"")+'>Marshalling</option>')
+                document.write('<option value="GC"'+(m=="GC"?" selected":"")+'>Grid Chief</option>')
+                document.write('<option value="G"'+(m=="G"?" selected":"")+'>Grid Team</option>')
+                document.write("</select></td></tr>")
+                document.write('<tr><td>Official:</td><td><select name="me" id="me" onchange="saveme(1)"></select></td></tr>')
+                document.write('</table>')
+            </script>
+        <hr>
+            <div align="center"><button onclick="popup(1)">Ok</button></div>
+        <hr>
+        <button onclick="window.location='admin.php'">Admin</button>
+        <button onclick="window.location='login.php'">Logout</button>
+    </div>
+
+</div>
+    <div class="footer">
+        GridBuddy by OBM  <span id="fm"></span>
+    </div>
+</div>
+<script>
+
+    get_data();
+
+    var divElem = document.getElementById('content');
+    var chElem = document.getElementById('grid_detail_end');
+    var topPos = divElem.offsetTop;
+    divElem.scrollTop = chElem.offsetTop;
+
+function popup(w) {
+    if (w==0) {
+        $("#myform").show(200);
+    } else {
+        $("#myform").hide(200);
+        if ($("#myform").data("changed")) {
+            window.location.reload();
+        }
+    }
+}
+
+function saveme(w) {
+    if (w==0) {
+        setCookie("m",$("#m option:selected").val(),5)
+    } else {
+        setCookie("me",$("#me option:selected").text(),5)
+    }
+    $("#myform").data("changed",true)
+}
+
+function toggle(p) {
+    if ($("#m option:selected").val() == "M") {
+        switch (true) {
+        case ($("#g"+p).hasClass("fromlane")):
+            $("#g"+p).removeClass("fromlane");
+            status = 1  // scratch (back to black)
+            break;
+        default:
+            $("#g"+p).addClass("fromlane");
+            status = 0  // present (white)
+        }
+    } else {
+        switch (true) {
+        case ($("#g"+p).hasClass("fromlane")):
+            $("#g"+p).removeClass("fromlane");
+            status = 0  // present
+            break;
+        case ($("#g"+p).hasClass("scratch")):
+            $("#g"+p).removeClass("scratch");
+            $("#g"+p).addClass("fromlane");
+            status = 1
+            break;
+        default:
+            $("#g"+p).addClass("scratch");
+            status = 2
+        }
+    }
+    $.post("grid_data.php",
+        {
+        "what": "upd_grid",
+        "race_id": getCookie("race_id"),
+        "pos": p,
+        "grid_status": status
+        },
+        function(data, status){
+            if (data != "") {
+                console.log(data);
+            }
+    });
+}
+
+function mode() {
+    switch ($("#m option:selected").val()) {
+    case "M":
+        $('.who_gc').css('display','none');
+        $('.who_g').css('display','none');
+        break;
+    case "GC":
+        $('.who_gc').css('display','block');
+        $('.who_g').css('display','none');
+        $('.grid_detail tr td:nth-child(3)').css('opacity','1');
+        break;
+    case "G":
+        $('.who_gc').css('display','none');
+        $('.who_g').css('display','block');
+        break;
+    }
+}
+
+function load_grid(json) {
+    table = "";
+    grid = "";
+    rows = "";
+    officials = "";
+    race = "";
+    j=$.parseJSON(json)
+    $.each(j, function(i, v) {
+        //console.log(v.name)
+        if (v.grp == "race") {
+            race = v.data;
+        }
+        if (v.grp == "grid") {
+            grid = v.data;
+        }
+        if (v.grp == "officials") {
+            officials = v.data;
+        }
+        if (v.grp == "rows") {
+            rows = v.data;
+        }
+        if (rows != "" && race != "" && grid != "" && officials != "") {
+            return false; // stops the loop
+        }
+    });
+    mp = race[0].max_pos
+    $("#e_id").text(race[0].ref)
+    $("#e_name").text(race[0].name)
+    $("#e_time").text(race[0].start_time)
+    pole = race[0].pole_lr
+
+    gr = 1;
+    row = 1;
+    me = getCookie("me")
+    if (me == "") {
+        $("#myform").data("changed",true)
+    }
+
+    os = ""
+    for(o of officials) {
+        os += "<option"
+        if (me == o.initials) {
+            os += " selected"
+        }
+        os +=">"+o.initials+"</option>"
+    }
+
+    $('#me').empty().append("<option></option>"+os);
+
+    if ($("#m option:selected").val() == "M") { // Marshalling
+        st=['fromlane','','']
+    } else {
+        st=['','scratch','fromlane']
+    }
+    
+    for (gp = 1; gp <= mp; gp++) {
+        rx_name="?"
+        rx_id = -1
+        if (rows == "") {
+        } else {
+            rx = (rows.filter(p => p.row == row))
+            if (rx.length > 0) {
+                rx_id = rx[0].official_id
+                rx_name = officials.filter(p => p.id == rx_id)[0].initials
+            }
+        }
+        if (pole == "R") {
+            x = grid.filter(p => p.pos == gp)
+            if (isOdd(gp)) { // right hand column
+                tr = "<td"
+                if (rx_name == me) {
+                    tr += " class='me_initial'"
+                }
+
+                tr +="><span class='who_g'>"+rx_name+"</span><span class='who_gc'><select id='wgc"+row+"' onchange='who("+row+")'><option>?</option>"
+                    for(o of officials) {
+                        tr += "<option value='"+o.id+"'"
+                            if (o.id == rx_id) {
+                                tr += " selected"
+                            }
+                        tr += ">"+o.initials+"</option>"
+                    }
+                    tr += "</select></span>"
+                table = tr + "<td id='g"+gp+"' onclick='toggle("+gp+")' class='"+st[x[0].status]+"'>"+x[0].car+"</td><td onclick='toggle("+gp+")'>" + ( (gp == 1) ? "P" : gp.toString() ) + "</td></tr>/r/n" + table
+            } else {  // left hand column
+                tr = "<tr"
+                if (rx_name == me && $("#m option:selected").val() != "M") {
+                    tr += " class='me'"
+                }
+                tr += "><td onclick='toggle("+gp+")'>"+gp.toString()+"</td><td id='g"+gp+"' onclick='toggle("+gp+")' class='"+st[x[0].status]+"'>"+x[0].car+"</td>"
+                table = tr + table
+                row = row + 1
+            }
+        } else {
+            x = grid.filter(p => p.pos == gp)
+            if (x.length == 0) { // nothing found
+                xstatus = 0
+                xcar = ""
+            } else {
+                xstatus = x[0].status
+                xcar = x[0].car
+            }
+            if (isOdd(gp)) { // left hand column
+                tr = "<tr"
+                if (rx_name == me && $("#m option:selected").val() != "M") {
+                    tr += " class='me'"
+                }
+                tr += "><td onclick='toggle("+gp+")'>"+( (gp == 1) ? "P" : gp.toString() )+"</td><td id='g"+gp+"' onclick='toggle("+gp+")' class='"+st[xstatus]+"'>"+xcar+"</td>"
+                tr += "<td"
+                if (rx_name == me) {
+                    tr += " class='me_initial'"
+                }
+
+                tr +="><span class='who_g'>"+rx_name+"</span><span class='who_gc'><select id='wgc"+row+"' onchange='who("+row+")'><option>?</option>"
+                    for(o of officials) {
+                        tr += "<option value='"+o.id+"'"
+                            if (o.id == rx_id) {
+                                tr += " selected"
+                            }
+                        tr += ">"+o.initials+"</option>"
+                    }
+                    tr += "</select></span>##right##"
+                table = tr + table
+            } else {
+                table =  table.replace("##right##","<td id='g"+gp+"' onclick='toggle("+gp+")' class='"+st[xstatus]+"'>"+xcar+"</td><td onclick='toggle("+gp+")'>" + ( (gp == 1) ? "P" : gp.toString() ) + "</td></tr>/r/n")
+                row = row + 1
+            }
+        }
+    }
+    if (table.indexOf("##right##")>0) {
+        table = table.replace("##right##","<td></td><td>"+gp.toString()+"</td></tr>")
+    }
+    if (table.substring(0,3) != "<tr") {  // we need to add the line start
+        tr = "<tr"
+                if (rx_name == me) {
+                    tr += " class='me'"
+                }
+                table = tr + "><td>"+gp.toString()+"</td><td></td>" + table
+    }
+    if ($("#m option:selected").val() != "M") {
+        // add Green Flag
+        rx = (rows.filter(p => p.row == 99))
+        if (rx.length > 0 && rx[0].official_id > 0) {    // will default to last person
+            rx_id = rx[0].official_id
+            rx_name = officials.filter(p => p.id == rx_id)[0].initials
+        }
+        tr = "<tr><td><td><i class='fa fa-flag-o' aria-hidden='true'></i><td>"
+        tr += "<span class='who_g'>"+rx_name+"</span><span class='who_gc'><select id='wgc99' onchange='who(99)'><option>?</option>"
+        for(o of officials) {
+            tr += "<option value='"+o.id+"'"
+            if (o.id == rx_id) {
+                tr += " selected"
+            }
+            tr += ">"+o.initials+"</option>"
+        }
+        tr += "</select></span>"
+        tr += "<td><i class='fa fa-flag-o' aria-hidden='true'></i><td></tr>"
+        table = tr + table
+    }
+    $("#grid_detail tbody").html(table)
+
+    mode()
+
+    var el = $(".grid_detail tr td:nth-child(1)").on("long-press",long_press)
+    var el = $(".grid_detail tr td:nth-child(2)").on("long-press",long_press)
+    var el = $(".grid_detail tr td:nth-child(4)").on("long-press",long_press)
+    var el = $(".grid_detail tr td:nth-child(5)").on("long-press",long_press)
+}
+
+function long_press(x) {
+    x.preventDefault()
+    t = x.target.outerHTML
+    p = t.indexOf("toggle(")+7
+    if (p == -1) {
+        t=""
+    } else {
+        t = t.substring(p)
+        p = t.indexOf(")")
+        t = t.substring(0,p)
+    }
+    console.log("--"+$("#g"+t).text())
+}
+
+function who(row) {
+    $.post("grid_data.php",
+        {
+        "what": "upd_row",
+        "race_id": getCookie("race_id"),
+        "row": row,
+        "official_id": $("#wgc"+row).val()
+        },
+        function(data, status){
+            if (data != "") {
+                console.log(data)
+            }
+    });
+}
+
+function get_data() {
+    if (getCookie("race_id") != "") {
+        $.post("grid_data.php",
+            {
+            "what": "get_data",
+            "race_id": getCookie("race_id")
+            },
+            function(data, status){
+                load_grid(data);
+        });
+    }
+}
+
+</script>
+</body>
+</html>
