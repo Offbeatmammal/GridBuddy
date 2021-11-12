@@ -11,7 +11,7 @@ Grid officials can also mark vehicles as starting from lane (so not expected to 
 
 Supports both Right and Left Pole position layouts (event by event).
 
-Currently *very* rough proof of concept, with some of the admin functions still being very clunky.
+Currently *very* rough proof of concept, with some of the admin functions still being clunky, and in some cases just stubs!
 
 You will need to add your own db_connect.php with credentials for the database:
 ```
