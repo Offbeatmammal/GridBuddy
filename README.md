@@ -1,5 +1,5 @@
 # GridBuddy
-phone optimised grid sheets for Marshalling, PitLane, and Grid teams.
+**Phone optimised grid sheets for Marshalling, PitLane, and Grid teams.**
 
 Designed to offer a light-weight simple alterative to paper based grid sheets for circuit races
 
@@ -27,3 +27,5 @@ if (!$conn) {
 }
 ?>
 ```
+
+`gridbuddy.sql` contains MySQL database layout with sample event data
