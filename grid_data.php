@@ -4,6 +4,39 @@ include "db_connect.php";
 $what = $_POST['what'];
 
 switch ($what) {
+    case "del_official":
+        $official_id = $_POST['official_id'];
+        $event_id = $_POST['event_id'];
+        $sql = mysqli_prepare($conn, "delete from officials where id=? and event_id=?");
+        mysqli_stmt_bind_param($sql, "ss", $official_id, $event_id);
+        if (mysqli_stmt_execute($sql)) {
+            echo $official_id;
+        } else {
+            echo "Error updating record: " . mysqli_error($conn);
+        }
+        break;
+    case "ins_official":
+        $event_id = $_POST['event_id'];
+        $o_i = $_POST['initials'];
+        $sql = mysqli_prepare($conn, "insert into officials (initials, event_id) values (?,?)");
+        mysqli_stmt_bind_param($sql, "ss", $o_i, $event_id);
+        if (mysqli_stmt_execute($sql)) {
+            echo mysqli_insert_id($conn);
+        } else {
+            echo "Error updating record: " . mysqli_error($conn);
+        }
+        break;
+    case "upd_official":
+        $official_id = $_POST['official_id'];
+        $event_id = $_POST['event_id'];
+        $o_i = $_POST['initials'];
+        $sql = mysqli_prepare($conn, "update officials set initials=? where id=? and event_id=?");
+        mysqli_stmt_bind_param($sql, "sss", $o_i, $official_id, $event_id);
+        if (mysqli_stmt_execute($sql)) {
+        } else {
+            echo "Error updating record: " . mysqli_error($conn);
+        }
+        break;
     case "ins_race":
         //$race_id = $_POST['race_id'];
         $event_id = $_POST['event_id'];

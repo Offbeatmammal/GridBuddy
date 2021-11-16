@@ -16,7 +16,7 @@ html body {
 }
 
 .header {
-  flex: 0 1 auto;
+  flex: 0 1 auto auto;
   margin-bottom: 5px;
 }
 
@@ -25,8 +25,15 @@ html body {
   overflow: auto;
 }
 
+.footer_legend {
+    flex: 0 1 30px;
+    text-align:center;
+    vertical-align: bottom;
+    margin-top: 10px;
+    margin-bottom: 0px;
+}
 .footer {
-  flex: 0 1 30px;
+  flex: 0 1 2 30px;
   margin-top: 5px;
   margin-bottom: 0px;
   vertical-align: bottom;
@@ -84,7 +91,13 @@ html body {
         opacity: 0.5;
         min-width: 5vw;
     }
-
+.legend {
+    background-color: #a0a0a0;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
     .me_initial {
         opacity: 1 !important;
     }
@@ -127,7 +140,7 @@ html body {
   display:none;
   left: 50%;
     top: 30%;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -30%);
     font-size: 4vw;
 }
 .dialog select,
@@ -198,6 +211,9 @@ try {
         <button onclick="window.location='login.php'">Logout</button>
     </div>
 
+</div>
+
+<div class="footer_legend"><span class="legend" id="legend"></span>
 </div>
     <div class="footer">
         GridBuddy by OBM  <span id="fm"></span>
@@ -278,15 +294,19 @@ function mode() {
     case "M":
         $('.who_gc').css('display','none');
         $('.who_g').css('display','none');
+        $("#legend").html("<span>Awaiting car/Scratched</span>&nbsp;|&nbsp;<span class='fromlane'>Present</span>")
         break;
     case "GC":
         $('.who_gc').css('display','block');
         $('.who_g').css('display','none');
         $('.grid_detail tr td:nth-child(3)').css('opacity','1');
+        console.log("Legend")
+        $("#legend").html("<span>Present</span>&nbsp;|&nbsp;<span class='fromlane'>From Lane</span>&nbsp;|&nbsp;<span class='scratch'>Scratched</span>")
         break;
     case "G":
         $('.who_gc').css('display','none');
         $('.who_g').css('display','block');
+        $("#legend").html("<span>Present</span>&nbsp;|&nbsp;<span class='fromlane'>From Lane</span>&nbsp;|&nbsp;<span class='scratch'>Scratched</span>")
         break;
     }
 }
@@ -347,14 +367,19 @@ function load_grid(json) {
     }
     
     for (gp = 1; gp <= mp; gp++) {
-        rx_name="?"
+        rx_name=""
         rx_id = -1
         if (rows == "") {
         } else {
             rx = (rows.filter(p => p.row == row))
             if (rx.length > 0) {
                 rx_id = rx[0].official_id
-                rx_name = officials.filter(p => p.id == rx_id)[0].initials
+                if (rx_id > 0) {
+                    rx_name = officials.filter(p => p.id == rx_id)[0].initials
+                } else {
+                    rx_id = -1
+                    rx_name = ""
+                }
             }
         }
         if (pole == "R") {
@@ -437,7 +462,11 @@ function load_grid(json) {
             rx_id = rx[0].official_id
             rx_name = officials.filter(p => p.id == rx_id)[0].initials
         }
-        tr = "<tr><td><td><i class='fa fa-flag-o' aria-hidden='true'></i><td>"
+        tr = "<tr"
+        if (rx_name == me) {
+            tr += " class='me'"
+        }
+        tr += "><td><td><i class='fa fa-flag-o' aria-hidden='true'></i><td>"
         tr += "<span class='who_g'>"+rx_name+"</span><span class='who_gc'><select id='wgc99' onchange='who(99)'><option>?</option>"
         for(o of officials) {
             tr += "<option value='"+o.id+"'"
