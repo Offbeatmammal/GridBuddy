@@ -37,6 +37,8 @@ To Do
 Many things still need doing, including a lot of UX tidy-up, workflow improvement, and performance tweaks.
 
 - Import automatically from race admin software (eg [NatSoft](http://racing.natsoft.com.au/))
+- Optimize the code around left/right hand Pole position layouts
+- move to more ajax/DOM manipulation vs full page refresh
 - Support Marshalling/Grid teams moving a car to a rear-of-grid space
 - Indicate what revision is being viewed (and prompt to update if old)
 - move to realtime messaging vs refresh for all team displays (though need to address the issue of, eg, a message being received and changing status as the receiving user taps, toggling the result!t)

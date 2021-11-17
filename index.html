@@ -82,6 +82,13 @@ html body {
         border-left: 1vw solid black;
         border-right: 1vw solid black;
     }
+    .grid_detail .me_top {
+        border-top: 1vw solid black !important;
+    }
+    .grid_detail .me_bottom {
+        border-bottom: 1vw solid black;
+    }
+
     .grid_detail tr td:nth-child(3) {
         padding-right: 1.2vw;
         padding-left: 1.2vw;
@@ -365,7 +372,7 @@ function load_grid(json) {
     } else {
         st=['','scratch','fromlane']
     }
-    
+    me_active = false;
     for (gp = 1; gp <= mp; gp++) {
         rx_name=""
         rx_id = -1
@@ -420,8 +427,20 @@ function load_grid(json) {
             }
             if (isOdd(gp)) { // left hand column
                 tr = "<tr"
-                if (rx_name == me && $("#m option:selected").val() != "M") {
-                    tr += " class='me'"
+                if ($("#m option:selected").val() != "M" && me != "") {
+                    if (rx_name == me)  {
+                        tr += " class='me"
+                        if (!me_active) {
+                            me_active = true;
+                            tr += " me_bottom"
+                        }
+                        tr += "'"
+                    } else {
+                        if (me_active) {
+                            me_active = false;
+                            tr += " class='me_bottom'"
+                        }
+                    }
                 }
                 tr += "><td onclick='toggle("+gp+")'>"+( (gp == 1) ? "P" : gp.toString() )+"</td><td id='g"+gp+"' onclick='toggle("+gp+")' class='"+st[xstatus]+"'>"+xcar+"</td>"
                 tr += "<td"
@@ -463,8 +482,10 @@ function load_grid(json) {
             rx_name = officials.filter(p => p.id == rx_id)[0].initials
         }
         tr = "<tr"
-        if (rx_name == me) {
-            tr += " class='me'"
+        if (me != "") {
+            if (rx_name == me) {
+                tr += " class='me me_top'"
+            }
         }
         tr += "><td><td><i class='fa fa-flag-o' aria-hidden='true'></i><td>"
         tr += "<span class='who_g'>"+rx_name+"</span><span class='who_gc'><select id='wgc99' onchange='who(99)'><option>?</option>"
