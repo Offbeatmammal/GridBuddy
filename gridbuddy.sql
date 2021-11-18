@@ -81,7 +81,7 @@ INSERT INTO `grid` (`id`, `race_id`, `pos`, `car`, `driver`, `grid_status`) VALU
 CREATE TABLE `officials` (
   `id` int(11) NOT NULL,
   `event_id` int(11) NOT NULL,
-  `initials` varchar(5) NOT NULL
+  `initials` varchar(10) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --

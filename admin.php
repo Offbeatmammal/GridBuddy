@@ -40,7 +40,7 @@ if (mysqli_stmt_execute($sql)) {
     </thead>
     <tbody>
 <?php
-echo "<tr><td><td><input type='text' size=5 maxlength=5 id='o0' value=''>";
+echo "<tr><td><td><input type='text' size=10 maxlength=10 id='o0' value=''>";
 echo "<td><button onclick='save_o(0)'><i class='fas fa-save'></i></button>";
 echo "<td></td></tr>";
 $sql = mysqli_prepare($conn, "SELECT race.id, officials.id, initials, count(distinct race.id) as races 
@@ -52,7 +52,7 @@ mysqli_stmt_bind_param($sql, "s", $event);
 if (mysqli_stmt_execute($sql)) {
     $result = mysqli_stmt_get_result($sql);
     while ($row = mysqli_fetch_assoc($result) ) {
-        echo "<tr><td>".$row['id']."<td><input type='text' size=5 maxlength=5 id='o".$row['id']."' value='".$row['initials']."'>";
+        echo "<tr><td>".$row['id']."<td><input type='text' size=10 maxlength=10 id='o".$row['id']."' value='".$row['initials']."'>";
         echo "<td><button onclick='save_o(".$row['id'].")'><i class='fas fa-save'></i></button>";
         if ($row['races']==0) {
             echo "<td><button onclick='del_o(".$row['id'].")'><i class='fa fa-trash'></i></button>";
@@ -80,7 +80,7 @@ echo "<td><button onclick='save_r(0)'><i class='fas fa-save'></i></button>";
 echo "<td></td></tr>";
 $sql = mysqli_prepare($conn, "SELECT id, ref, `name`, start_time, completed
                                 FROM `race` WHERE event_id = ?
-                                ORDER BY start_time");
+                                ORDER BY ref, start_time");
 mysqli_stmt_bind_param($sql, "s", $event);
 if (mysqli_stmt_execute($sql)) {
     $result = mysqli_stmt_get_result($sql);
@@ -140,7 +140,7 @@ function save_o(o_id) {
                     console.log(data);
                 } else {
                     // copy the row and use the supplied ID
-                    out = "<tr><td>"+data+"<td><input type='text' size=5 maxlength=5 id='o"+data+"' value='"+$("#o0").val()+"'>";
+                    out = "<tr><td>"+data+"<td><input type='text' size=10 maxlength=10 id='o"+data+"' value='"+$("#o0").val()+"'>";
                     out += "<td><button onclick='save_o("+data+")'><i class='fas fa-save'></i></button>";
                     out += "<td><button onclick='del_o("+data+")'><i class='fa fa-trash'></i></button>";
                     out += "</tr>";

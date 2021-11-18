@@ -48,7 +48,7 @@ if (mysqli_stmt_execute($sql)) {
 <p>Please select a race:</p>
 <table>
 <?php
-$sql = mysqli_prepare($conn, "SELECT id, ref, `name`, start_time from race where event_id=? and completed=0 order by start_time, ref");
+$sql = mysqli_prepare($conn, "SELECT id, ref, `name`, start_time from race where event_id=? and completed=0 order by ref, start_time");
 mysqli_stmt_bind_param($sql, "s", $event);
 if (mysqli_stmt_execute($sql)) {
     $result = mysqli_stmt_get_result($sql);
