@@ -6,9 +6,9 @@ $what = $_POST['what'];
 switch ($what) {
     case "remove_rog":
         $race_id = $_POST['race_id'];
-        $car = $_POST['car'];
-        $sql = mysqli_prepare($conn, "update grid set rog=false where race_id=? and car=?");
-        mysqli_stmt_bind_param($sql, "ss",  $race_id, $car);
+        $pos = $_POST['pos'];
+        $sql = mysqli_prepare($conn, "update grid set rog=false where race_id=? and pos=?");
+        mysqli_stmt_bind_param($sql, "ss",  $race_id, $pos);
         if (mysqli_stmt_execute($sql)) {
         } else {
             echo "Error reverting RoG: " . mysqli_error($conn);

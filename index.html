@@ -279,44 +279,64 @@ function saveme(w) {
 }
 
 function toggle(p) {
-    if ($("#m option:selected").val() == "M") {
-        switch (true) {
-        case ($("#g"+p).hasClass("fromlane")):
-            $("#g"+p).removeClass("fromlane");
-            status = 1  // scratch (back to black)
-            break;
-        default:
-            $("#g"+p).addClass("fromlane");
-            status = 0  // present (white)
+if (p <= last) {
+    if ($("#g"+p).hasClass("rog_inline")) {
+        if (confirm("Revert car "+$("#g"+p).text()+ " to original position?")) {
+            $.post("grid_data.php",
+            {
+                "what": "remove_rog",
+                "race_id": getCookie("race_id"),
+                "pos": p
+            },
+            function(data, status){
+                if (data != "") {
+                    console.log(data)
+                } else {
+                    window.location="index.html"
+                }
+            });
         }
     } else {
-        switch (true) {
-        case ($("#g"+p).hasClass("fromlane")):
-            $("#g"+p).removeClass("fromlane");
-            status = 0  // present
-            break;
-        case ($("#g"+p).hasClass("scratch")):
-            $("#g"+p).removeClass("scratch");
-            $("#g"+p).addClass("fromlane");
-            status = 1
-            break;
-        default:
-            $("#g"+p).addClass("scratch");
-            status = 2
-        }
-    }
-    $.post("grid_data.php",
-        {
-        "what": "upd_grid",
-        "race_id": getCookie("race_id"),
-        "pos": p,
-        "grid_status": status
-        },
-        function(data, status){
-            if (data != "") {
-                console.log(data);
+        if ($("#m option:selected").val() == "M") {
+            switch (true) {
+            case ($("#g"+p).hasClass("fromlane")):
+                $("#g"+p).removeClass("fromlane");
+                status = 1  // scratch (back to black)
+                break;
+            default:
+                $("#g"+p).addClass("fromlane");
+                status = 0  // present (white)
             }
-    });
+        } else {
+            switch (true) {
+            case ($("#g"+p).hasClass("fromlane")):
+                $("#g"+p).removeClass("fromlane");
+                status = 0  // present
+                break;
+            case ($("#g"+p).hasClass("scratch")):
+                $("#g"+p).removeClass("scratch");
+                $("#g"+p).addClass("fromlane");
+                status = 1
+                break;
+            default:
+                $("#g"+p).addClass("scratch");
+                status = 2
+            }
+        }
+        $.post("grid_data.php",
+            {
+            "what": "upd_grid",
+            "race_id": getCookie("race_id"),
+            "pos": p,
+            "grid_status": status
+            },
+            function(data, status){
+                if (data != "") {
+                    console.log(data);
+                }
+        });
+    }
+}
 }
 
 function mode() {

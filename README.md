@@ -10,7 +10,8 @@ Once a grid has been created, the Grid Chief can assign team members to specific
 Marshalling teams can mark cars present or scratched simply by tapping on the car, without having to communicate via radio to Grid officials
 
 Grid officials can mark vehicles as scratched or starting from lane (so not expected to appear on Grid)
-Grid officials can also tap the flags at the end of the grid and nominate cars to start from Rear of Grid - entering th number of an existing car will leave a 'shadow' in its original position and a duplicate shown at the end of the field. A long press on the original position will prompt to return the car to that place on the grid.
+Grid officials can also tap the flags at the end of the grid and nominate cars to start from Rear of Grid - entering the number of an existing car will leave a 'shadow' in its original position and a duplicate shown at the end of the field. A tap on the original position will prompt to return the car to that place on the grid (rather than change status).
+(Note: you cannot change the status of a car that's not in it's original grid position)
 
 Supports both Right and Left Pole position layouts (event by event).
 
