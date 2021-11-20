@@ -4,6 +4,63 @@ include "db_connect.php";
 $what = $_POST['what'];
 
 switch ($what) {
+    case "remove_rog":
+        $race_id = $_POST['race_id'];
+        $car = $_POST['car'];
+        $sql = mysqli_prepare($conn, "update grid set rog=false where race_id=? and car=?");
+        mysqli_stmt_bind_param($sql, "ss",  $race_id, $car);
+        if (mysqli_stmt_execute($sql)) {
+        } else {
+            echo "Error reverting RoG: " . mysqli_error($conn);
+        }
+
+        break;
+    case "add_rog": // used to add a car to the ROG after checking it's not already there
+        $race_id = $_POST['race_id'];
+        $car = $_POST['car'];
+        $grid_id = 0;
+        $max_grid = 0;
+        $sql = mysqli_prepare($conn, "select max(pos) as mp from `grid` where race_id=?");
+        mysqli_stmt_bind_param($sql, "s", $race_id);
+        if (mysqli_stmt_execute($sql)) {
+            $result = mysqli_stmt_get_result($sql);
+            $row = mysqli_fetch_assoc($result);
+            $max_grid = $row['mp']+1;
+            $sql = mysqli_prepare($conn, "select id, rog from grid where race_id=? and car=?");
+            mysqli_stmt_bind_param($sql, "ss", $race_id, $car);
+            if (mysqli_stmt_execute($sql)) {
+                $result = mysqli_stmt_get_result($sql);
+                if (mysqli_num_rows($result)>0) {
+                    $row = mysqli_fetch_assoc($result);
+                    if ($row['rog']) {
+                        // already R.O.G so do nothing
+                    } else {
+                        $grid_id = $row['id'];
+                        // update RoG status (leave them where they are for reference)
+                        $sql = mysqli_prepare($conn, "update grid set rog=true where id=?");
+                        mysqli_stmt_bind_param($sql, "s",  $grid_id);
+                        if (mysqli_stmt_execute($sql)) {
+                        } else {
+                            echo "Error updating grid: " . mysqli_error($conn);
+                        }
+                    }
+                } else {
+                    // insert as it's a new car
+                    echo "Insert $car at $max_grid for $race_id";
+                    $sql = mysqli_prepare($conn, "insert into grid (race_id, pos, car, driver, grid_status, rog) values (?,?,?,'',0, true)");
+                    mysqli_stmt_bind_param($sql, "sss", $race_id, $max_grid, $car);
+                    if (mysqli_stmt_execute($sql)) {
+                    } else {
+                        echo "Error inserting into grid: " . mysqli_error($conn);
+                    }
+                }
+            } else {
+                echo "Error reading grid: " . mysqli_error($conn);
+            }
+        } else {
+            echo "Error reading max pos from grid: " . mysqli_error($conn);
+        }
+        break;
     case "del_official":
         $official_id = $_POST['official_id'];
         $event_id = $_POST['event_id'];
@@ -107,7 +164,8 @@ switch ($what) {
                 "ref":"' . $row['ref'] .'",
                 "start_time":"' . $row['start_time'] .'",
                 "pole_lr":"' . $row['pole_lr'] .'",
-                "max_pos":"##maxpos##"}]}';  // will substitute later
+                "max_pos":"##maxpos##",
+                "last":"##last##"}]}';  // will substitute MaxPos and Last (non RoG car) later
             $event_id = $row['event_id'];
         } else {
             $race = "Error reading record: " . mysqli_error($conn);
@@ -131,8 +189,14 @@ switch ($what) {
             $officials = "Error reading record: " . mysqli_error($conn);
         }
 
-        $sql = mysqli_prepare($conn, "select pos, car, grid_status from grid where race_id=?");
+        $sql = mysqli_prepare($conn, "select max(pos) as max_norog from grid where race_id=? and (rog=false or rog is null)");
         mysqli_stmt_bind_param($sql, "i", $race_id);
+        mysqli_stmt_execute($sql);
+        $result = mysqli_stmt_get_result($sql);
+        $row = mysqli_fetch_assoc($result);
+        $last = $row['max_norog'];  // we only want the (originally) non RoG cars on first pass
+        $sql = mysqli_prepare($conn, "select pos, car, grid_status, rog from grid where race_id=? and pos <= ?");
+        mysqli_stmt_bind_param($sql, "ii", $race_id, $last);
         if (mysqli_stmt_execute($sql)) {
             $result = mysqli_stmt_get_result($sql);
             $grid = "";
@@ -144,14 +208,32 @@ switch ($what) {
                     $grid = $grid . ",";
                 }
                 $grid = $grid . '{"pos":' . $row['pos'] .',
-                        "car":"' . $row['car'] .'",
-                        "status":' . $row['grid_status'] . '}';
+                    "car":"' . $row['car'] .'",
+                    "status":' . $row['grid_status'] .',
+                    "rog":"' . $row['rog'] .'"}';
                 if ($row['pos'] > $mp) {
                     $mp = $row['pos'];
                 }
             }
+            // now go and repeat the RoG vehicles
+            $sql = mysqli_prepare($conn, "select car, grid_status, rog from grid where race_id=? and rog=true");
+            mysqli_stmt_bind_param($sql, "i", $race_id);
+            if (mysqli_stmt_execute($sql)) {
+                $result = mysqli_stmt_get_result($sql);
+                while ($row = mysqli_fetch_assoc($result)) {
+                    $mp++;
+                    if ($grid != "") {
+                        $grid = $grid . ",";
+                    }
+                    $grid = $grid . '{"pos":' . $mp .',
+                        "car":"' . $row['car'] .'",
+                        "status":' . $row['grid_status'] .',
+                        "rog":"' . $row['rog'] .'"}';
+                }
+            }
             $grid = $grid . "]}";
             $race = str_replace("##maxpos##",$mp, $race);
+            $race = str_replace("##last##",$last, $race);
         } else {
             $grid = "Error reading record: " . mysqli_error($conn);
         }

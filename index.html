@@ -130,6 +130,15 @@ html body {
 .fromlane {
     color:white;
 }
+.rog {
+    opacity: 0.7;
+    background: linear-gradient(135deg,  rgba(200,200,200,1) 0%,rgba(100,100,100,1) 50%,rgba(110,100,100,1) 51%,rgba(200,200,200,1) 100%)
+}
+.rog_inline
+{
+    opacity: 0.2;
+    color: white;
+}
 .who_gc {
     display: none;
 }
@@ -152,7 +161,8 @@ html body {
     font-size: 4vw;
 }
 .dialog select,
-.dialog tr td
+.dialog tr td,
+.dialog input[type=number]
 {
     font-size: 6vw;
 }
@@ -167,6 +177,8 @@ html body {
 
 </style>
 <script>
+var last=0  // we want this available everywhere as it's used to track the last non-RoG vehicle
+
 event_id = getCookie("event");
 if (event_id == "") {
     window.location="login.php";
@@ -219,6 +231,11 @@ try {
         <button onclick="window.location='login.php'">Logout</button>
     </div>
 
+    <div class="dialog" id="rog">
+        <p>Rear of Grid:<br><input value="" type="number" min=1 max=9999 maxlength=4 id="rog_car" oninput="if (this.value.length > this.maxLength) this.value = this.value.slice(0, this.maxLength); if (this.value.length==0) {$('#addrog').prop('disabled',true) } else {$('#addrog').prop('disabled',false)}"><button id="addrog" disabled onclick='add_rog()'>ROG</button></p>
+        <button onclick="window.location='index.html'">Ok</button>
+    </div>
+
 </div>
 
 <div class="footer_legend"><span class="legend" id="legend"></span>
@@ -245,6 +262,11 @@ function popup(w) {
             window.location.reload();
         }
     }
+}
+
+function pop_rog() {
+    // pop up the Rear of Grid form
+    $("#rog").show(200);
 }
 
 function saveme(w) {
@@ -345,6 +367,7 @@ function load_grid(json) {
         }
     });
     mp = race[0].max_pos
+    last = race[0].last
     $("#e_id").text(race[0].ref)
     $("#e_name").text(race[0].name)
     $("#e_time").text(race[0].start_time)
@@ -369,9 +392,9 @@ function load_grid(json) {
     $('#me').empty().append("<option></option>"+os);
 
     if ($("#m option:selected").val() == "M") { // Marshalling
-        st=['fromlane','','']
+        st=['fromlane','','','rog']
     } else {
-        st=['','scratch','fromlane']
+        st=['','scratch','fromlane','rog_inline','rog']
     }
     me_active = false;
     for (gp = 1; gp <= mp; gp++) {
@@ -425,6 +448,13 @@ function load_grid(json) {
             } else {
                 xstatus = x[0].status
                 xcar = x[0].car
+                if (x[0].rog==1) {
+                    if (gp<=last) {
+                        xstatus=3   // non RoG cars
+                    } else {
+                        xstatus=4   // RoG repeats
+                    }
+                }
             }
             if (isOdd(gp)) { // left hand column
                 tr = "<tr"
@@ -488,7 +518,7 @@ function load_grid(json) {
                 tr += " class='me me_top'"
             }
         }
-        tr += "><td><td><i class='fa fa-flag-o' aria-hidden='true'></i><td>"
+        tr += "><td><td><i class='fa fa-flag-o' aria-hidden='true' onclick='pop_rog()'></i><td>"
         tr += "<span class='who_g'>"+rx_name+"</span><span class='who_gc'><select id='wgc99' onchange='who(99)'><option>?</option>"
         for(o of officials) {
             tr += "<option value='"+o.id+"'"
@@ -498,7 +528,7 @@ function load_grid(json) {
             tr += ">"+o.initials+"</option>"
         }
         tr += "</select></span>"
-        tr += "<td><i class='fa fa-flag-o' aria-hidden='true'></i><td></tr>"
+        tr += "<td><i class='fa fa-flag-o' aria-hidden='true' onclick='pop_rog()'></i><td></tr>"
         table = tr + table
     }
     $("#grid_detail tbody").html(table)
@@ -518,11 +548,47 @@ function long_press(x) {
     if (p == -1) {
         t=""
     } else {
-        t = t.substring(p)
+        t = t.substring(p)  // should perhaps use jQuery 'data' attributes to be neater
         p = t.indexOf(")")
-        t = t.substring(0,p)
+        t = parseInt(t.substring(0,p))
     }
-    console.log("--"+$("#g"+t).text())
+
+    if (t <= last && $("#g"+t).hasClass("rog_inline")) {
+        if (confirm("Revert car "+$("#g"+t).text()+ " to original position?")) {
+            $.post("grid_data.php",
+            {
+                "what": "remove_rog",
+                "race_id": getCookie("race_id"),
+                "car": $("#g"+t).text()
+            },
+            function(data, status){
+                if (data != "") {
+                    console.log(data)
+                } else {
+                    window.location="index.html"
+                }
+            });
+        }
+        //console.log("--Last:"+last+", this:"+t+","+$("#g"+t).text())
+    }
+}
+
+function add_rog() {
+    $("#rog_car").prop("disabled",true)
+    $('#addrog').prop('disabled',true)
+    $.post("grid_data.php",
+        {
+        "what": "add_rog",
+        "race_id": getCookie("race_id"),
+        "car": $("#rog_car").val()
+        },
+        function(data, status){
+            $("#rog_car").prop("disabled",false)
+            $("#rog_car").val("")
+            if (data != "") {
+                console.log(data)
+            }
+    });  
 }
 
 function who(row) {
