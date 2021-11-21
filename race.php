@@ -28,7 +28,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
     
-$sql = mysqli_prepare($conn, "select circuit, name, start_date from event where id=?");
+$sql = mysqli_prepare($conn, "select circuit, name, start_date, pole_lr from event where id=?");
 mysqli_stmt_bind_param($sql, "s", $event);
 if (mysqli_stmt_execute($sql)) {
     $result = mysqli_stmt_get_result($sql);
@@ -37,6 +37,7 @@ if (mysqli_stmt_execute($sql)) {
         $e_n = $row['name'];
         $e_c = $row['circuit'];
         $e_sd = $row['start_date'];
+        $e_lr = $row['pole_lr'];
     }
 }
 $sql = mysqli_prepare($conn, "select ref, name, start_time from race where event_id=? and id=?");
@@ -72,7 +73,22 @@ if (mysqli_stmt_execute($sql)) {
     </thead>
     <tbody>
 <?php
-for ($i=1; $i <= 60; $i++) {
+for ($i=60; $i >= 1; $i=$i-2) {
+    if ($e_lr == "R") { // pole on Right
+        echo "<tr>";
+        showGrid($i);
+        echo "<td>&nbsp;&nbsp;&nbsp;";
+        showGrid($i-1);
+    } else {    // pole on Left
+        echo "<tr>";
+        showGrid($i-1);
+        echo "<td>&nbsp;&nbsp;&nbsp;";
+        showGrid($i);
+    }
+}
+
+function showGrid($i) {
+global $conn;
     $found = false;
     $sql = mysqli_prepare($conn, "SELECT id, car, driver from `grid` WHERE pos = ? and race_id = ?");
     mysqli_stmt_bind_param($sql, "ss", $i, $race);
@@ -83,15 +99,15 @@ for ($i=1; $i <= 60; $i++) {
             $found = true;
         }
     }
-    if (($i % 2) != 0) {
-        echo "<tr>";
+    if ($i==1) {
+        $pos = "Pole";
     } else {
-        echo "<td>&nbsp;&nbsp;&nbsp;";
+        $pos = $i;
     }
     if ($found) {
-        echo "<td><input type='hidden' name='id_$i' value='".$row['id']."'>$i<td><input name='car_$i' type='text' size=5 maxlength=5 value='".$row['car']."'>";
+        echo "<td><input type='hidden' name='id_$i' value='".$row['id']."'>$pos<td><input name='car_$i' type='text' size=5 maxlength=5 value='".$row['car']."'>";
     } else {
-        echo "<td><input type='hidden' name='id_$i' value='0'>$i<td><input name='car_$i' type='text' size=5 maxlength=5 value=''>";
+        echo "<td><input type='hidden' name='id_$i' value='0'>$pos<td><input name='car_$i' type='text' size=5 maxlength=5 value=''>";
     }
 }
 ?>
