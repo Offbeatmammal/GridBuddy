@@ -5,7 +5,7 @@ Designed to offer a light-weight simple alterative to paper based grid sheets fo
 
 Allows organizers to define multiple races within an event, create a list of grid officials, populate original race grids following qualifying with immediate distribution.
 
-Grids are currently entered using a bulk form (which, similar to grid sheet layouts, orients to match grid sheets for the event), Ideally this would be an automated input from Natsoft etc.
+Grids are currently entered using a bulk form (which, similar to grid sheet layouts, orients to match grid sheets for the event, and set to a default number of rows per event), Ideally this would be an automated input from Natsoft etc.
 
 Once a grid has been created, the Grid Chief can assign team members to specific rows (and green flag)
 
@@ -19,6 +19,8 @@ Grid officials can also tap the flags at the end of the grid and nominate cars t
 Supports both Right and Left Pole position layouts (event by event).
 
 Currently *very* rough proof of concept, with some of the admin functions still being clunky, and in some cases just stubs!
+
+Android users: for phones that support it (assuming Chrome) screen keep-alive is used when on the Gridsheet view (admin modes do not activate this) - please be aware as this may impact battery life if the user does not switch away from the browser or manually sleep their phone.
 
 You will need to add your own db_connect.php with credentials for the database:
 ```

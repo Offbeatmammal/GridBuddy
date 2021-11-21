@@ -28,7 +28,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
     
-$sql = mysqli_prepare($conn, "select circuit, name, start_date, pole_lr from event where id=?");
+$sql = mysqli_prepare($conn, "select circuit, name, start_date, pole_lr, max_rows from event where id=?");
 mysqli_stmt_bind_param($sql, "s", $event);
 if (mysqli_stmt_execute($sql)) {
     $result = mysqli_stmt_get_result($sql);
@@ -38,6 +38,10 @@ if (mysqli_stmt_execute($sql)) {
         $e_c = $row['circuit'];
         $e_sd = $row['start_date'];
         $e_lr = $row['pole_lr'];
+        $e_mr = $row['max_rows'];
+        if ($e_mr == 0) {
+            $e_mr = 50;
+        }
     }
 }
 $sql = mysqli_prepare($conn, "select ref, name, start_time from race where event_id=? and id=?");
@@ -73,7 +77,7 @@ if (mysqli_stmt_execute($sql)) {
     </thead>
     <tbody>
 <?php
-for ($i=60; $i >= 1; $i=$i-2) {
+for ($i=$e_mr; $i >= 1; $i=$i-2) {
     if ($e_lr == "R") { // pole on Right
         echo "<tr>";
         showGrid($i);
